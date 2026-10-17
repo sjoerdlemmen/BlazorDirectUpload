@@ -19,6 +19,13 @@ public sealed class SampleAppFixture : IAsyncLifetime
     public const int PartSizeMiB = 5;
     private const string StorageUrl = "http://localhost:9000";
 
+    // The sample is started with --no-build, so it must use the configuration the tests were built with.
+#if DEBUG
+    private const string Configuration = "Debug";
+#else
+    private const string Configuration = "Release";
+#endif
+
     private Process? _app;
     private IPlaywright? _playwright;
     private readonly StringBuilder _appLog = new();
@@ -55,7 +62,7 @@ public sealed class SampleAppFixture : IAsyncLifetime
         var port = FreePort();
         BaseUrl = $"http://127.0.0.1:{port}";
         var project = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "../../../../../samples/SampleApp/SampleApp"));
-        var start = new ProcessStartInfo("dotnet", $"run --no-build --no-launch-profile --project \"{project}\" --urls {BaseUrl}")
+        var start = new ProcessStartInfo("dotnet", $"run --no-build --no-launch-profile -c {Configuration} --project \"{project}\" --urls {BaseUrl}")
         {
             RedirectStandardOutput = true,
             RedirectStandardError = true,
