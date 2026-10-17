@@ -11,7 +11,8 @@
 - [x] README, docs/design.md, docs/roadmap.md, LICENSE, CI workflow, dotnet pack (2 nupkgs)
 - [x] 3 GiB upload to local S3 (automated, Server mode)
 - [ ] R2 verification (needs credentials)
-- [ ] Publish GitHub repo (needs approval)
+- [x] Private GitHub repo sjoerdlemmen/BlazorDirectUpload, CI green
+- [ ] Make repo public + NuGet publish (needs approval, after R2)
 
 ## Decisions
 - MinIO official images are gone (Docker Hub + quay.io refuse anonymous pulls, MinIO CE retired). Using RustFS
