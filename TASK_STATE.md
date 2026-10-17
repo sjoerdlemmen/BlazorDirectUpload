@@ -12,7 +12,7 @@
 - [x] 3 GiB upload to local S3 (automated, Server mode)
 - [ ] R2 verification (needs credentials)
 - [x] Private GitHub repo sjoerdlemmen/BlazorDirectUpload, CI green
-- [ ] Make repo public + NuGet publish (needs approval, after R2)
+- [x] Repo public; v0.1.0 published to nuget.org via Trusted Publishing (release.yml, tag v0.1.0)
 
 ## Decisions
 - MinIO official images are gone (Docker Hub + quay.io refuse anonymous pulls, MinIO CE retired). Using RustFS
