@@ -1,0 +1,29 @@
+# Local S3-compatible storage for the sample app and the E2E tests.
+#
+# The official MinIO community images are no longer published (Docker Hub and
+# quay.io both refuse anonymous pulls since MinIO CE was retired). RustFS is an
+# S3-compatible, MinIO-style drop-in that exposes the same API on port 9000.
+# Any S3-compatible endpoint works; see README "Storage providers".
+#
+# The bucket and its CORS policy are created by the sample app on startup
+# (Development only) via PutBucketCors, the same call you would make for AWS/R2.
+services:
+  s3:
+    image: rustfs/rustfs@sha256:7e948dad4748bda48f8985fda7195f8cf2e4259427011f6120acc2c9acf51587
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      RUSTFS_ACCESS_KEY: directupload
+      RUSTFS_SECRET_KEY: directupload-secret
+      RUSTFS_CONSOLE_ENABLE: "true"
+    volumes:
+      - s3-data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fs http://localhost:9000/health || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+volumes:
+  s3-data:

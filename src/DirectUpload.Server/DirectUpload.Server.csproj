@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <IsPackable>true</IsPackable>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <Description>Server side of BlazorDirectUpload: minimal-API endpoints that orchestrate presigned S3 multipart uploads (AWS S3, Cloudflare R2, MinIO, Backblaze B2, Wasabi) so large files go straight from the browser to object storage.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    <PackageReference Include="AWSSDK.S3" Version="4.0.104.4" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\Shared\Contracts.cs" Link="Contracts.cs" />
+    <InternalsVisibleTo Include="DirectUpload.Server.Tests" />
+    <None Include="..\..\README.md" Pack="true" PackagePath="\" />
+    <None Include="..\..\build\icon.png" Pack="true" PackagePath="\" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,56 @@
+@namespace DirectUpload.Blazor
+@inject DirectUploader Uploader
+
+<input type="file" @ref="_element" @attributes="AdditionalAttributes" @onchange="HandleChangeAsync" />
+
+@code {
+    private ElementReference _element;
+
+    /// <summary>Start an upload for every selected file as soon as files are picked.</summary>
+    [Parameter] public bool AutoStart { get; set; }
+
+    /// <summary>Per-input options; falls back to the defaults from <c>AddDirectUploadClient</c>.</summary>
+    [Parameter] public DirectUploadClientOptions? Options { get; set; }
+
+    /// <summary>Raised after the user picked files (metadata only).</summary>
+    [Parameter] public EventCallback<IReadOnlyList<SelectedFile>> OnFilesSelected { get; set; }
+
+    /// <summary>Raised for each upload started by <see cref="AutoStart"/> or <see cref="StartUploadAsync"/>.</summary>
+    [Parameter] public EventCallback<UploadHandle> OnUploadStarted { get; set; }
+
+    /// <summary>Raised when an automatic start fails. Without a handler the exception propagates.</summary>
+    [Parameter] public EventCallback<Exception> OnError { get; set; }
+
+    /// <summary>Attributes such as <c>accept</c>, <c>multiple</c>, <c>class</c> or <c>id</c> are passed to the input.</summary>
+    [Parameter(CaptureUnmatchedValues = true)] public IReadOnlyDictionary<string, object>? AdditionalAttributes { get; set; }
+
+    /// <summary>The underlying input element.</summary>
+    public ElementReference Element => _element;
+
+    /// <summary>Starts uploading the selected file at <paramref name="fileIndex"/>.</summary>
+    public async Task<UploadHandle> StartUploadAsync(int fileIndex = 0)
+    {
+        var handle = await Uploader.StartAsync(_element, fileIndex, Options);
+        await OnUploadStarted.InvokeAsync(handle);
+        return handle;
+    }
+
+    private async Task HandleChangeAsync(ChangeEventArgs _)
+    {
+        var files = await Uploader.GetSelectedFilesAsync(_element);
+        await OnFilesSelected.InvokeAsync(files);
+        if (!AutoStart) return;
+
+        for (var i = 0; i < files.Count; i++)
+        {
+            try
+            {
+                await StartUploadAsync(i);
+            }
+            catch (Exception ex) when (OnError.HasDelegate)
+            {
+                await OnError.InvokeAsync(ex);
+            }
+        }
+    }
+}

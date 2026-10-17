@@ -1,0 +1,20 @@
+<Project>
+  <PropertyGroup>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+
+    <Version>0.1.0</Version>
+    <Authors>Sjoerd Lemmen</Authors>
+    <Copyright>Copyright (c) 2026 Sjoerd Lemmen</Copyright>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/sjoerdlemmen/BlazorDirectUpload</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/sjoerdlemmen/BlazorDirectUpload</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageTags>blazor;upload;s3;r2;multipart;presigned;large-files</PackageTags>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageIcon>icon.png</PackageIcon>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+</Project>

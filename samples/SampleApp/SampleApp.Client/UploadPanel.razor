@@ -1,0 +1,78 @@
+@using DirectUpload.Blazor
+@implements IDisposable
+
+<p class="mode" data-testid="render-mode">Running interactively on: <strong>@(RendererInfo.Name)</strong></p>
+
+<DirectUploadInput multiple data-testid="file-input" AutoStart="true"
+                   disabled="@(!RendererInfo.IsInteractive)"
+                   OnUploadStarted="Track" OnError="ShowError" />
+
+@if (_startError is not null)
+{
+    <p class="error" data-testid="start-error">@_startError</p>
+}
+
+<ul class="uploads">
+    @foreach (var upload in _uploads)
+    {
+        <li data-testid="upload" data-file="@upload.File.Name" data-status="@upload.Status">
+            <div class="name">@upload.File.Name <span class="size">(@FormatSize(upload.File.Size))</span></div>
+            <progress max="1" value="@upload.Progress.Fraction.ToString(System.Globalization.CultureInfo.InvariantCulture)"></progress>
+            <span data-testid="percent">@((upload.Progress.Fraction * 100).ToString("0"))%</span>
+            <span class="status" data-testid="status">@upload.Status</span>
+            @if (upload.Status == UploadStatus.Running)
+            {
+                <button data-testid="cancel" @onclick="upload.CancelAsync">Cancel</button>
+            }
+            @if (_results.TryGetValue(upload, out var result))
+            {
+                <div class="result" data-testid="result-key">@result.Key</div>
+            }
+            @if (upload.Error is not null)
+            {
+                <div class="error" data-testid="error">@upload.Error</div>
+            }
+        </li>
+    }
+</ul>
+
+@code {
+    private readonly List<UploadHandle> _uploads = [];
+    private readonly Dictionary<UploadHandle, UploadResult> _results = [];
+    private string? _startError;
+
+    private void Track(UploadHandle upload)
+    {
+        _startError = null;
+        _uploads.Insert(0, upload);
+        upload.ProgressChanged += _ => InvokeAsync(StateHasChanged);
+        _ = ObserveAsync(upload);
+    }
+
+    private async Task ObserveAsync(UploadHandle upload)
+    {
+        try
+        {
+            _results[upload] = await upload.Completion;
+        }
+        catch (Exception)
+        {
+            // Failed or cancelled: upload.Status and upload.Error tell the story.
+        }
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private void ShowError(Exception ex) => _startError = ex.Message;
+
+    private static string FormatSize(long bytes) => bytes switch
+    {
+        >= 1L << 30 => $"{bytes / (double)(1L << 30):0.00} GiB",
+        >= 1L << 20 => $"{bytes / (double)(1L << 20):0.0} MiB",
+        _ => $"{bytes} B",
+    };
+
+    public void Dispose()
+    {
+        foreach (var upload in _uploads) upload.Dispose();
+    }
+}
