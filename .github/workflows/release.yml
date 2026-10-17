@@ -1,0 +1,64 @@
+name: Release
+
+# Publishes both packages to nuget.org when a version tag (v0.1.0, v0.2.0-beta.1, ...) is pushed.
+# Uses NuGet Trusted Publishing: GitHub's OIDC token is exchanged for a 1-hour API key, so no
+# long-lived key is stored. Requires a Trusted Publishing policy on nuget.org for
+# owner sjoerdlemmen / repo BlazorDirectUpload / workflow release.yml / environment nuget,
+# and the repository secret NUGET_USER (nuget.org profile name, not the e-mail address).
+
+on:
+  push:
+    tags: ["v*"]
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    environment: nuget
+    permissions:
+      contents: read
+      id-token: write # GitHub OIDC token for NuGet/login
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            8.0.x
+            10.0.x
+
+      - name: Version from tag
+        run: echo "VERSION=${GITHUB_REF_NAME#v}" >> "$GITHUB_ENV"
+
+      - name: Start S3-compatible storage
+        run: docker compose up -d --wait
+
+      - name: Build
+        run: dotnet build BlazorDirectUpload.sln -c Release -p:Version=$VERSION
+
+      - name: Unit tests
+        run: dotnet test tests/DirectUpload.Server.Tests -c Release --no-build
+
+      - name: Install Playwright Chromium
+        run: pwsh tests/DirectUpload.E2E/bin/Release/net10.0/playwright.ps1 install --with-deps chromium
+
+      - name: E2E tests
+        run: dotnet test tests/DirectUpload.E2E -c Release --no-build
+
+      - name: Pack
+        run: |
+          dotnet pack src/DirectUpload.Server -c Release --no-build -p:Version=$VERSION -o artifacts
+          dotnet pack src/DirectUpload.Blazor -c Release --no-build -p:Version=$VERSION -o artifacts
+
+      - name: NuGet login (OIDC -> temporary API key)
+        uses: NuGet/login@v1
+        id: login
+        with:
+          user: ${{ secrets.NUGET_USER }}
+
+      - name: NuGet push
+        run: dotnet nuget push "artifacts/*.nupkg" --api-key ${{ steps.login.outputs.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: nupkgs-${{ env.VERSION }}
+          path: artifacts/*.nupkg

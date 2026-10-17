@@ -266,6 +266,12 @@ The official MinIO community images are no longer published, so `docker-compose.
 [RustFS](https://github.com/rustfs/rustfs), an S3-compatible server with the same API. The library
 itself is provider-agnostic.
 
+## Releasing
+
+Pushing a tag `vX.Y.Z` runs `.github/workflows/release.yml`: full build and tests, then
+`dotnet pack` with the tag as version and a push to nuget.org via
+[Trusted Publishing](https://learn.microsoft.com/nuget/nuget-org/trusted-publishing) (no stored API key).
+
 ## Limitations (v0.1)
 
 See [docs/roadmap.md](docs/roadmap.md): no resume after page reload, no Azure Blob Storage, no
