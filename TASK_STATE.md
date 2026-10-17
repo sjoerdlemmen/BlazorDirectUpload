@@ -7,9 +7,11 @@
 - [x] Server: options, part sizing, HMAC upload token, key policy, lifecycle hooks, 4 endpoints + unit tests
 - [x] JS module + DirectUploader + UploadHandle + DirectUploadInput
 - [x] Sample app: /, /server, /wasm (Auto, Server, WebAssembly)
-- [ ] Playwright E2E (happy path x3 modes, cancel, 403 refresh, permanent part failure, two concurrent)
-- [ ] README, docs/design.md, docs/roadmap.md, LICENSE, CI workflow, dotnet pack
-- [ ] Manual: 3 GB upload local; R2 (needs credentials from Sjoerd)
+- [x] Playwright E2E (10 green + opt-in 3 GiB test green)
+- [x] README, docs/design.md, docs/roadmap.md, LICENSE, CI workflow, dotnet pack (2 nupkgs)
+- [x] 3 GiB upload to local S3 (automated, Server mode)
+- [ ] R2 verification (needs credentials)
+- [ ] Publish GitHub repo (needs approval)
 
 ## Decisions
 - MinIO official images are gone (Docker Hub + quay.io refuse anonymous pulls, MinIO CE retired). Using RustFS

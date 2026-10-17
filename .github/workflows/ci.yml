@@ -1,0 +1,43 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            8.0.x
+            10.0.x
+
+      - name: Start S3-compatible storage
+        run: docker compose up -d --wait
+
+      - name: Build
+        run: dotnet build BlazorDirectUpload.sln -c Release
+
+      - name: Unit tests
+        run: dotnet test tests/DirectUpload.Server.Tests -c Release --no-build
+
+      - name: Install Playwright Chromium
+        run: pwsh tests/DirectUpload.E2E/bin/Release/net10.0/playwright.ps1 install --with-deps chromium
+
+      - name: E2E tests
+        run: dotnet test tests/DirectUpload.E2E -c Release --no-build
+
+      - name: Pack
+        run: |
+          dotnet pack src/DirectUpload.Server -c Release --no-build -o artifacts
+          dotnet pack src/DirectUpload.Blazor -c Release --no-build -o artifacts
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: nupkgs
+          path: artifacts/*.nupkg

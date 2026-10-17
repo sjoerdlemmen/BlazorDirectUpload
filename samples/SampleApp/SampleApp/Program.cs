@@ -1,6 +1,7 @@
 using Amazon.Runtime;
 using Amazon.S3;
 using Amazon.S3.Model;
+using DirectUpload.Server;
 using SampleApp.Components;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -30,6 +31,7 @@ builder.Services.AddDirectUpload(o =>
     o.BucketName = storage["Bucket"]!;
     o.SigningKey = builder.Configuration["DirectUpload:SigningKey"]!;
     o.KeyPrefix = "sample/";
+    o.PartSize = builder.Configuration.GetValue("DirectUpload:PartSizeMiB", 16) * PartSizing.MiB;
 });
 
 // 3. The Blazor client (also registered in SampleApp.Client for WebAssembly).
